@@ -5,7 +5,7 @@ from ipaddress import IPv4Network
 from django.contrib.contenttypes.models import ContentType
 from django.utils.text import slugify
 
-from nautobot.extras.jobs import Job
+from nautobot.extras.jobs import Job, register_jobs
 from nautobot.dcim.models import Region, Site, Device, DeviceType, DeviceRole, Interface, Cable, Rack, Platform
 from nautobot.dcim.choices import RackTypeChoices, InterfaceTypeChoices
 from nautobot.ipam.models import VLAN, IPAddress, Prefix, Role
