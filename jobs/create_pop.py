@@ -14,6 +14,7 @@ from nautobot.extras.models import Status, CustomField, Relationship, Relationsh
 from nautobot.extras.choices import RelationshipTypeChoices
 from nautobot.extras.jobs import *
 from nautobot.tenancy.models import Tenant
+from nautobot.apps.jobs import Job, register_jobs
 
 from ipaddress import IPv4Network
 
@@ -609,3 +610,4 @@ class CreatePop(Job):
                         status = Status.objects.get(slug="connected")
                         cable = Cable.objects.create(termination_a=intf, termination_b=ct, status=status)
                         cable2 = Cable.objects.create(termination_a=other_intf, termination_b=ctz, status=status)
+register_jobs(CreatePop)
