@@ -1,23 +1,18 @@
 from nautobot.apps.jobs import Job, register_jobs, StringVar, ObjectVar, MultiObjectVar, TextVar
-from nautobot.dcim.models import Location, Site, Device, DeviceType, DeviceRole, Manufacturer
-from nautobot.extras.models import CustomField, CustomFieldValue
+from nautobot.dcim.models import Location, Device, DeviceType, Manufacturer
+from nautobot.extras.models import CustomField, CustomFieldValue, Role, Status
 from nautobot.core.exceptions import ValidationError
 
 class CreateLocationSiteDevice(Job):
     class Meta:
-        name = "Create Location, Site, and Device"
-        description = "Create a location, site, and device with optional custom fields"
+        name = "Choose Location and Device"
+        description = "Choose a location and create a device with optional custom fields"
 
     location = ObjectVar(
         model=Location,
         display_field="name",
         required=True,
         description="Select a location",
-    )
-
-    site_name = StringVar(
-        description="Enter the site name",
-        required=True
     )
 
     device_name = StringVar(
@@ -29,39 +24,30 @@ class CreateLocationSiteDevice(Job):
         description="Optional custom fields in JSON format",
         required=False
     )
-
-    def run(self, data, commit):
+    # data does not exist in v2. Call out the data fields explicitly
+    def run(self, **data, commit):
         location = data['location']
-        site_name = data['site_name']
         device_name = data['device_name']
         custom_fields_data = data.get('custom_fields', {})
-
-        # Create the site
-        site, created = Site.objects.get_or_create(
-            name=site_name,
-            defaults={'location': location}
-        )
-        if created:
-            self.log_info(f"Created site '{site_name}' in location '{location.name}'")
-        else:
-            self.log_info(f"Site '{site_name}' already exists in location '{location.name}'")
 
         # Create the device
         try:
             manufacturer = Manufacturer.objects.first()  # Assuming at least one manufacturer exists
             device_type = DeviceType.objects.first()  # Assuming at least one device type exists
-            device_role = DeviceRole.objects.first()  # Assuming at least one device role exists
+            device_role = Role.objects.first()  # Assuming at least one device role exists
+            status = Status.objects.first() 
 
             device, created = Device.objects.get_or_create(
                 name=device_name,
                 site=site,
+                status=status,
                 device_type=device_type,
                 device_role=device_role
             )
             if created:
-                self.log_info(f"Created device '{device_name}' at site '{site_name}'")
+                self.logger.info(f"Created device '{device_name}' at site '{location}'")
             else:
-                self.log_info(f"Device '{device_name}' already exists at site '{site_name}'")
+                self.logger.info(f"Device '{device_name}' already exists at site '{location}'")
 
             # Apply custom fields if provided
             if custom_fields_data:
@@ -74,13 +60,13 @@ class CreateLocationSiteDevice(Job):
                             field=custom_field,
                             defaults={'value': value}
                         )
-                    self.log_info(f"Applied custom fields to device '{device_name}'")
+                    self.logger.info(f"Applied custom fields to device '{device_name}'")
                 except Exception as e:
-                    self.log_warning(f"Failed to apply custom fields: {str(e)}")
+                    self.logger.warning(f"Failed to apply custom fields: {str(e)}")
             else:
-                self.log_info("No custom fields provided")
+                self.logger.info("No custom fields provided")
         except Exception as e:
-            self.log_error(f"Failed to create device: {str(e)}")
+            self.logger.error(f"Failed to create device: {str(e)}")
             raise ValidationError(f"Failed to create device: {str(e)}")
 
         return "Job completed successfully"
