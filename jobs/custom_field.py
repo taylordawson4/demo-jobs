@@ -2,6 +2,7 @@ from nautobot.extras.jobs import Job, StringVar, ObjectVar, MultiObjectVar, Text
 from nautobot.dcim.models import Location, Site, Device, DeviceType, DeviceRole, Manufacturer
 from nautobot.extras.models import CustomField, CustomFieldValue
 from nautobot.core.exceptions import ValidationError
+from nautobot.apps.jobs import Job, register_jobs
 
 class CreateLocationSiteDevice(Job):
     class Meta:
@@ -86,4 +87,4 @@ class CreateLocationSiteDevice(Job):
         return "Job completed successfully"
 
 # Register the job
-jobs = [CreateLocationSiteDevice]
+register_jobs(CreateLocationSiteDevice)
