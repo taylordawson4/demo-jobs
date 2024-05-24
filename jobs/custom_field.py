@@ -72,4 +72,5 @@ class CreateLocationSiteDevice(Job):
         return "Job completed successfully"
 
 # Register the job
-register_jobs(CreateLocationSiteDevice)
+jobs = [CreateLocationSiteDevice]
+register_jobs(*jobs)
