@@ -1,8 +1,9 @@
-from nautobot.extras.jobs import Job, StringVar, ObjectVar, MultiObjectVar, TextVar, ContentType
+from nautobot.extras.jobs import Job, StringVar, ObjectVar, MultiObjectVar, TextVar
 from nautobot.dcim.models import Location, Device, DeviceType, Manufacturer
-from nautobot.extras.models import CustomField, CustomFieldValue, Role, Status
+from nautobot.extras.models import CustomField, Role, Status
 from nautobot.core.exceptions import ValidationError
 from django.utils.text import slugify
+from django.contrib.contenttypes.models import ContentType
 
 class CreateLocationSiteDevice(Job):
     class Meta:
