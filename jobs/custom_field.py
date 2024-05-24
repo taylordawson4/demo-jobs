@@ -36,7 +36,7 @@ class CreateLocationSiteDevice(Job):
         try:
             manufacturer = Manufacturer.objects.first()  # Assuming at least one manufacturer exists
             device_type = DeviceType.objects.first()  # Assuming at least one device type exists
-            device_role = Role.objects.first()  # Assuming at least one device role exists
+            role = Role.objects.first()  # Assuming at least one device role exists
             status = Status.objects.first() 
 
             device, created = Device.objects.get_or_create(
