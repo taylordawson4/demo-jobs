@@ -1,7 +1,8 @@
-from nautobot.extras.jobs import Job, StringVar, ObjectVar, MultiObjectVar, TextVar
+from nautobot.extras.jobs import Job, StringVar, ObjectVar, MultiObjectVar, TextVar, ContentType
 from nautobot.dcim.models import Location, Device, DeviceType, Manufacturer
 from nautobot.extras.models import CustomField, CustomFieldValue, Role, Status
 from nautobot.core.exceptions import ValidationError
+from django.utils.text import slugify
 
 class CreateLocationSiteDevice(Job):
     class Meta:
@@ -52,14 +53,19 @@ class CreateLocationSiteDevice(Job):
             # Apply custom fields if provided
             if custom_fields_data:
                 try:
-                    custom_fields_dict = eval(custom_fields_data)
-                    for field_name, value in custom_fields_dict.items():
-                        custom_field = CustomField.objects.get(name=field_name)
-                        CustomFieldValue.objects.update_or_create(
-                            obj=device,
-                            field=custom_field,
-                            defaults={'value': value}
-                        )
+                    #custom_fields_input = eval(custom_fields_data)
+                    ct_device = ContentType.objects.get_for_model(Device)
+                    #ContentType.objects.get_for_model(Device)
+                    for custom_field in eval(custom_fields_data):
+                        cf = CustomField.objects.get_or_create(label=custom_field,key=slugify(custom_field))
+                        cf.content_types.append(ct_device)
+                    #for field_name, value in custom_fields_dict.items():
+                    #    custom_field = CustomField.objects.get(name=field_name)
+                    #    CustomFieldValue.objects.update_or_create(
+                    #        obj=device,
+                    #        field=custom_field,
+                    #        defaults={'value': value}
+                    #    )
                     self.logger.info(f"Applied custom fields to device '{device_name}'")
                 except Exception as e:
                     self.logger.warning(f"Failed to apply custom fields: {str(e)}")
