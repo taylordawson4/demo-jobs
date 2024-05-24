@@ -58,7 +58,7 @@ class CreateLocationSiteDevice(Job):
                     ct_device = ContentType.objects.get_for_model(Device)
                     #ContentType.objects.get_for_model(Device)
                     for custom_field in eval(custom_fields_data):
-                        cf = CustomField.objects.get_or_create(label=custom_field,key=slugify(custom_field))
+                        cf, _ = CustomField.objects.get_or_create(label=custom_field,key=slugify(custom_field))
                         cf.content_types.append(ct_device)
                     #for field_name, value in custom_fields_dict.items():
                     #    custom_field = CustomField.objects.get(name=field_name)
