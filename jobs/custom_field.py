@@ -44,7 +44,7 @@ class CreateLocationSiteDevice(Job):
                 location=location,
                 status=status,
                 device_type=device_type,
-                device_role=device_role
+                role=role
             )
             if created:
                 self.logger.info(f"Created device '{device_name}' at site '{location}'")
