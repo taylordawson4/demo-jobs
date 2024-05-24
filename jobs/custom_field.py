@@ -1,4 +1,4 @@
-from nautobot.apps.jobs import Job, register_jobs, StringVar, ObjectVar, MultiObjectVar, TextVar
+from nautobot.extras.jobs import Job, StringVar, ObjectVar, MultiObjectVar, TextVar
 from nautobot.dcim.models import Location, Device, DeviceType, Manufacturer
 from nautobot.extras.models import CustomField, CustomFieldValue, Role, Status
 from nautobot.core.exceptions import ValidationError
@@ -72,5 +72,5 @@ class CreateLocationSiteDevice(Job):
         return "Job completed successfully"
 
 # Register the job
-jobs = [CreateLocationSiteDevice]
-register_jobs(*jobs)
+#jobs = [CreateLocationSiteDevice]
+#register_jobs(*jobs)
