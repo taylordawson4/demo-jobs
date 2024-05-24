@@ -25,7 +25,7 @@ class CreateLocationSiteDevice(Job):
         required=False
     )
     # data does not exist in v2. Call out the data fields explicitly
-    def run(self, **data, commit):
+    def run(self, **data):
         location = data['location']
         device_name = data['device_name']
         custom_fields_data = data.get('custom_fields', {})
@@ -39,7 +39,7 @@ class CreateLocationSiteDevice(Job):
 
             device, created = Device.objects.get_or_create(
                 name=device_name,
-                site=site,
+                location=location,
                 status=status,
                 device_type=device_type,
                 device_role=device_role
