@@ -1,3 +1,5 @@
+import json
+
 from nautobot.extras.jobs import Job, StringVar, ObjectVar, MultiObjectVar, TextVar
 from nautobot.dcim.models import Location, Device, DeviceType, Manufacturer
 from nautobot.extras.models import CustomField, Role, Status
@@ -52,12 +54,35 @@ class CreateLocationSiteDevice(Job):
                 self.logger.info(f"Device '{device_name}' already exists at site '{location}'")
 
             # Apply custom fields if provided
+            # if custom_fields_data:
+            #     try:
+            #         ct_device = ContentType.objects.get_for_model(Device)
+            #         for custom_field in eval(custom_fields_data):
+            #             cf, _ = CustomField.objects.get_or_create(label=custom_field,key=slugify(custom_field))
+            #             cf.content_types.add(ct_device)
+            #         self.logger.info(f"Applied custom fields to device '{device_name}'")
+            #     except Exception as e:
+            #         self.logger.warning(f"Failed to apply custom fields: {str(e)}")
+            # else:
+            #     self.logger.info("No custom fields provided")
             if custom_fields_data:
                 try:
                     ct_device = ContentType.objects.get_for_model(Device)
-                    for custom_field in eval(custom_fields_data):
-                        cf, _ = CustomField.objects.get_or_create(label=custom_field,key=slugify(custom_field))
+                    custom_fields = json.loads(custom_fields_data)
+                    for field_name, field_value in custom_fields.items():
+                        # Create or get the custom field
+                        cf, created = CustomField.objects.get_or_create(
+                            label=field_name,
+                            key=slugify(field_name),
+                            defaults={'type': 'text'}  # assuming type is 'text', adjust if needed
+                        )
+                        # Associate custom field with the Device content type
                         cf.content_types.add(ct_device)
+                        cf.save()  # Save after modifying the content_types
+            
+                        # Set the custom field value for the device
+                        device.custom_field_data[cf.key] = field_value
+                    device.save()
                     self.logger.info(f"Applied custom fields to device '{device_name}'")
                 except Exception as e:
                     self.logger.warning(f"Failed to apply custom fields: {str(e)}")
