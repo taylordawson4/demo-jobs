@@ -69,7 +69,7 @@ class CreateLocationSiteDevice(Job):
                 try:
                     ct_device = ContentType.objects.get_for_model(Device)
                     custom_fields = json.loads(custom_fields_data)
-                    for field_name, field_value in custom_fields.items():
+                    for field_name in custom_fields:
                         # Create or get the custom field
                         cf, created = CustomField.objects.get_or_create(
                             label=field_name,
@@ -81,7 +81,7 @@ class CreateLocationSiteDevice(Job):
                         cf.save()  # Save after modifying the content_types
             
                         # Set the custom field value for the device
-                        device.custom_field_data[cf.key] = field_value
+                        device.custom_field_data[cf.key] = "default_value"
                     device.save()
                     self.logger.info(f"Applied custom fields to device '{device_name}'")
                 except Exception as e:
