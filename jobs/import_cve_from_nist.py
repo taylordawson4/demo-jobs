@@ -1,46 +1,24 @@
-from datetime import datetime
-import requests
-from nautobot.apps.jobs import Job, StringVar, register_jobs
-from nautobot_device_lifecycle_mgmt.models import CVELCM
+from nautobot.apps.jobs import Job, StringVar, IntegerVar, register_jobs
 
-class ImportCVEFromNIST(Job):
-    """Job to import CVEs from NIST NVD into Nautobot's CVE model."""
-    
-    published_after = StringVar(
-        label="CVEs Published After",
-        description="Fetch CVEs published after this date (YYYY-MM-DD).",
-        default="1970-01-01",
-        required=False
-    )
+class UserInputJob(Job):
+    """A job that demonstrates the use of user input."""
 
-    def fetch_cve_data(self, published_after):
-        """Fetch CVE data from the NIST NVD JSON feed."""
-        url = "https://nvd.nist.gov/vuln/search/results?form_type=Basic&results_type=overview&search_type=last3months&isCpeNameSearch=false"
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.json().get("result", {}).get("CVE_Items", [])
-        else:
-            self.logger.error("Failed to fetch CVE data: %s", response.status_code)
-            return []
+    class Meta:
+        name = "User Input Job"
+        description = "Job to demonstrate user inputs and their handling."
+        approval_required = False  # Set to True if you want the job execution to require approval
 
-    def run(self, published_after):
-        published_after = published_after or "1970-01-01"
-        cve_items = self.fetch_cve_data(published_after)
+    # Define input variables
+    user_name = StringVar(description="Please enter your name")
+    user_age = IntegerVar(description="Please enter your age")
+
+    def run(self, *, user_name, user_age):
+        self.logger.info("User Name: %s", user_name)
+        self.logger.info("User Age: %d", user_age)
         
-        for cve_item in cve_items:
-            cve_data = {
-                "name": cve_item["cve"]["CVE_data_meta"]["ID"],
-                "description": cve_item["cve"]["description"]["description_data"][0]["value"],
-                "publish_date": datetime.strptime(cve_item["publishedDate"], "%Y-%m-%dT%H:%MZ"),
-                "link": f"https://nvd.nist.gov/vuln/detail/{cve_item['cve']['CVE_data_meta']['ID']}",
-                "severity": cve_item["impact"]["baseMetricV3"]["cvssV3"]["baseSeverity"],
-                "cvss_base_score": cve_item["impact"]["baseMetricV3"]["cvssV3"]["baseScore"],
-            }
-            
-            CVELCM.objects.update_or_create(
-                name=cve_data["name"],
-                defaults=cve_data
-            )
-            self.logger.info("Processed CVE: %s", cve_data["name"])
+        if user_age < 18:
+            self.logger.warning("Note: User is under 18")
+        else:
+            self.logger.info("User is an adult.")
 
-register_jobs(ImportCVEFromNIST)
+register_jobs(UserInputJob)
