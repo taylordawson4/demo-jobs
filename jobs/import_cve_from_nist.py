@@ -15,7 +15,7 @@ class ImportCVEFromNIST(Job):
 
     def fetch_cve_data(self, published_after):
         """Fetch CVE data from the NIST NVD JSON feed."""
-        url = f"https://services.nvd.nist.gov/rest/json/cves/2.0?cpeName=cpe:2.3:o:{}:{}:{}:*:*:*:*:*:*:*"
+        url = "https://nvd.nist.gov/vuln/search/results?form_type=Basic&results_type=overview&search_type=last3months&isCpeNameSearch=false"
         response = requests.get(url)
         if response.status_code == 200:
             return response.json().get("result", {}).get("CVE_Items", [])
